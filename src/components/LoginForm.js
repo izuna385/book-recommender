@@ -1,52 +1,73 @@
-import React from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
+import React, { useContext, useState } from "react";
+import {
+  BoldLink,
+  BoxContainer,
+  FormContainer,
+  Input,
+  MutedLink,
+  SubmitButton,
+  FieldContainer,
+  FieldError,
+  FormError
+} from "./common";
+import { AccountContext } from "./accountContext";
+import { useFormik } from "formik";
+import * as yup from  "yup";
+import { identityForEmail } from "sshpk";
+import { fromPrefixLen } from "ip";
+import axios from "axios";
 
-const loginSchema = Yup.object().shape({
-  password: Yup.string()
-    .min(8, "Too Short!")
-    .max(50, "Too Long!")
-    .required("Required"),
-  email: Yup.string().email("Invalid email").required("Required")
-});
 
-const LoginForm = () => {
-  const handleSubmit = (values, { setSubmitting }) => {
-    setTimeout(() => {
-      alert(JSON.stringify(values, null, 2));
-      setSubmitting(false);
-    }, 400);
-  };
+const validationSchema = yup.object(
+  {email: yup.string().required(),
+   password: yup.string().required()}
+)
 
-    return (
-      <>
-        <h1>Login</h1>
-        <Formik
-          initialValues={{ email: "", password: "" }}
-          validationSchema={loginSchema}
-          onSubmit={handleSubmit}
-        >
-          {({ isSubmitting }) => {
-            return (
-              <Form>
-                <label>
-                  Email: <Field type="email" name="email" />
-                  <ErrorMessage name="email" component="div" />
-                </label>
-                <label>
-                  Password:
-                  <Field type="password" name="password" />
-                  <ErrorMessage name="password" component="div" />
-                </label>
-                <button type="submit" disabled={isSubmitting}>
-                  Submit
-                </button>
-              </Form>
-            );
-          }}
-        </Formik>
-      </>
+const LoginForm = (props) => {
+  const [error, setError] = useState(null);
+
+  const onSubmit = async (values) => {
+    setError(null);
+    const response = await axios.post("http://localhost:5000/api/v1/login", values).catch((err) => {
+      if (err && err.response) {
+        setError(err.response.data.message);
+      }
+
+
+    }
+    
     );
+    if (response) {
+      alert("Auth success");
+      console.log(values)
+    }
+    
+
   }
+  const formik = useFormik({initialValues: {email: "", password: ""}, validateOnBlur: true, onSubmit, validationSchema: validationSchema });
+  return (
+    <BoxContainer>
+      {error && <FormError>{error ? error: ""}</FormError>}
+
+      <FormContainer onSubmit={formik.handleSubmit}>
+        <FieldContainer>
+        <Input name="email" placeholder="Email" value={formik.values.email} onChange={formik.handleChange} onBlur={formik.handleBlur}/>
+        {<FieldError>{formik.touched.email && formik.errors.email ? formik.errors.email : ""}</FieldError>}
+        </FieldContainer>
+        
+
+        <FieldContainer>
+        <Input name="password" type="password" placeholder="Password" value={formik.values.password} onChange={formik.handleChange} onBlur={formik.handleBlur}/>
+        {<FieldError>{formik.touched.password && formik.errors.password ? formik.errors.password : ""}</FieldError>}
+
+        </FieldContainer>
+      <MutedLink href="#">Forget your password?</MutedLink>
+      <SubmitButton type="submit" disabled={!formik.isValid}>Signin</SubmitButton>
+      </FormContainer>
+
+
+    </BoxContainer>
+  );
+}
 
 export default LoginForm;
