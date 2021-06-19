@@ -36,9 +36,8 @@ const SignupForm = (props) => {
 
   // values: {fullName: "", email: "", password: "", cofirmPassword: ""}
   const onSubmit = async (values) => {
-    const {confirmPassword, ...data} = values;
     const postedData = {
-      name: data.fullName, email: data.email, password: data.password
+      name: values.fullName, email: values.email, password: values.password
     } 
     console.log("postedData", postedData);
 
