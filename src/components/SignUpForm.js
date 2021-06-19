@@ -36,8 +36,13 @@ const SignupForm = (props) => {
 
   // values: {fullName: "", email: "", password: "", cofirmPassword: ""}
   const onSubmit = async (values) => {
-    const {confirmPassword, ... data} = values;
-    const response = await axios.post("http://localhost:5000/api/v1/register", data).catch((err) => {
+    const {confirmPassword, ...data} = values;
+    const postedData = {
+      name: data.fullName, email: data.email, password: data.password
+    } 
+    console.log("postedData", postedData);
+
+    const response = await axios.post("https://api-for-missions-and-railways.herokuapp.com/users", postedData).catch((err) => {
       if (err && err.response) setError(err.response.data.message);
       setSuccess(null);
     });
